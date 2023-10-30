@@ -1,26 +1,61 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from "vue"
+const TIME_FOCUS = 25 * 60
+const TIME_SHORT_BREAK = 5 * 60
+const TIME_LONG_BREAK = 15 * 60
+import alarm from "@/assets/sound/alarm_sound.wav"
+import { ref, computed, onMounted, onUnmounted, watchEffect } from "vue"
 type Tab = "focus" | "short-break" | "long-break"
+const alarmAudioRef = ref<HTMLAudioElement>()
 const selectedTab = ref<Tab>("focus")
-const counter = ref(25 * 60)
+const counter = ref(TIME_FOCUS)
+const focusCount = ref(1)
 const status = ref("stopped")
+let interval: any;
+function stopCounter() {
+    status.value = "stopped"
+    alarmAudioRef.value?.play()
+    clearInterval(interval)
+
+}
+
 function setSelectedTab(tab: Tab) {
     selectedTab.value = tab
     switch (tab) {
         case "focus":
-            counter.value = 25 * 60
+            counter.value = TIME_FOCUS
+            focusCount.value = focusCount.value + 1
+            stopCounter()
             break;
         case "short-break":
-            counter.value = 5 * 60
+            counter.value = TIME_SHORT_BREAK
+            stopCounter()
             break;
         case "long-break":
-            counter.value = 15 * 60
+            counter.value = TIME_LONG_BREAK
+            stopCounter()
             break;
         default:
             break;
     }
 }
-let interval: any;
+const emit = defineEmits<{
+    (e: "focus-completed"): void
+}>()
+watchEffect(() => {
+    if (counter.value === 0) {
+        if (selectedTab.value === "focus" && focusCount.value % 4 === 0) {
+            emit("focus-completed")
+            setSelectedTab("long-break")
+        } else if (selectedTab.value === "focus") {
+            emit("focus-completed")
+            setSelectedTab("short-break")
+        } else {
+            setSelectedTab("focus")
+        }
+    }
+})
+
+
 function toggleCounter() {
     status.value = status.value === "stopped" ? "started" : "stopped"
     if (status.value === "stopped") {
@@ -32,7 +67,7 @@ function toggleCounter() {
     }
 }
 onUnmounted(() => {
-    clearInterval(interval)
+    stopCounter()
 })
 const minutes = computed(() => Math.floor(counter.value / 60))
 const seconds = computed(() => counter.value % 60)
@@ -56,6 +91,9 @@ const seconds = computed(() => counter.value % 60)
             <button @click="toggleCounter" class="bg-white text-brandGreen w-full h-24 text-6xl rounded shadow-xl mt-6">{{
                 status === "stopped" ? 'Start' : 'Stop' }}</button>
         </div>
+        <audio ref="alarmAudioRef">
+            <source :src="alarm" type="audio/wav" />
+        </audio>
     </div>
 </template>
 
