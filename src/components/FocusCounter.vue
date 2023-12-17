@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const TIME_FOCUS = 0.2 * 60
+const TIME_FOCUS = 25 * 60
 const TIME_SHORT_BREAK = 5 * 60
 const TIME_LONG_BREAK = 15 * 60
 import alarm from "@/assets/sound/alarm_sound.wav"
