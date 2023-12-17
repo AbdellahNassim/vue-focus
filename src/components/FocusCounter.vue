@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const TIME_FOCUS = 25 * 60
+const TIME_FOCUS = 0.2 * 60
 const TIME_SHORT_BREAK = 5 * 60
 const TIME_LONG_BREAK = 15 * 60
 import alarm from "@/assets/sound/alarm_sound.wav"
@@ -13,26 +13,29 @@ const status = ref("stopped")
 let interval: any;
 function stopCounter() {
     status.value = "stopped"
-    alarmAudioRef.value?.play()
+
     clearInterval(interval)
 
 }
 
-function setSelectedTab(tab: Tab) {
+function setSelectedTab(tab: Tab, alarm = true) {
     selectedTab.value = tab
     switch (tab) {
         case "focus":
             counter.value = TIME_FOCUS
             focusCount.value = focusCount.value + 1
             stopCounter()
+            if(alarm) alarmAudioRef.value?.play()
             break;
         case "short-break":
             counter.value = TIME_SHORT_BREAK
             stopCounter()
+            if(alarm) alarmAudioRef.value?.play()
             break;
         case "long-break":
             counter.value = TIME_LONG_BREAK
             stopCounter()
+            if(alarm) alarmAudioRef.value?.play()
             break;
         default:
             break;
@@ -75,12 +78,12 @@ const seconds = computed(() => counter.value % 60)
 <template>
     <div class="bg-brandGreen bg-opacity-75 p-6 rounded-md">
         <div class="flex gap-4">
-            <button @click="setSelectedTab('focus')"
+            <button @click="setSelectedTab('focus', false)"
                 :class="[{ 'bg-gray-400': selectedTab === 'focus' }, 'bg-opacity-50 p-2 rounded']">Focus</button>
-            <button @click="setSelectedTab('short-break')"
+            <button @click="setSelectedTab('short-break',false)"
                 :class="[{ 'bg-gray-400': selectedTab === 'short-break' }, 'bg-opacity-50 p-2 rounded']">Short
                 Break</button>
-            <button @click="setSelectedTab('long-break')"
+            <button @click="setSelectedTab('long-break',false)"
                 :class="[{ 'bg-gray-400': selectedTab === 'long-break' }, 'bg-opacity-50 p-2 rounded']">Long
                 Break</button>
         </div>
